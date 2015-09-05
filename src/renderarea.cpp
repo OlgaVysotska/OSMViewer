@@ -5,8 +5,10 @@
 #include <QColor>
 #include <QFont>
 #include <QFontMetrics>
+#include <iostream>
 
 #include "renderarea.h"
+#include "road.h"
 
 RenderArea::RenderArea(QWidget *parent)
     : QWidget(parent)
@@ -37,7 +39,9 @@ void RenderArea::mouseMoveEvent(QMouseEvent * event)
 
 void RenderArea::mousePressEvent(QMouseEvent *event)
 {
+    std::cout << "Mouse is pressed " << std::endl;
     this->mouseMoveLast = event->globalPos();
+    dump2image();
 }
 
 void RenderArea::wheelEvent(QWheelEvent *event)
@@ -78,7 +82,7 @@ QSize RenderArea::sizeHint() const
 }
 
 void RenderArea::receiveNewData(
-        QVector<QPolygonF> &roads,
+        QVector<Road> &roads,
         QVector<QPolygonF> &houses,
         QVector<QPolygonF> &parkings,
         QVector<QPolygonF> &other)
@@ -94,6 +98,10 @@ void RenderArea::receiveNewData(
 void RenderArea::updateBounds(QHash<QString, double> &bounds)
 {
     _bounds = bounds;
+
+    QSize areaSize(bounds["xMax"] - bounds["xMin"], bounds["yMax"] - bounds["yMin"]);
+    qDebug() << areaSize;
+    this->setFixedSize(areaSize);
 
     // canvas
     double width = this->frameSize().width();
@@ -140,15 +148,21 @@ void RenderArea::drawRoads(QPainter & painter)
     QPen pen(QColor(100,50,240));
     pen.setCapStyle(Qt::RoundCap);
 
-    pen.setWidthF(3);
-    painter.setOpacity(0.6);
-    painter.setPen(pen);
+//    pen.setWidthF(3);
+    painter.setOpacity(1.0);
+//    painter.setPen(pen);
 
     painter.setBrush(Qt::SolidPattern);
 
-    for (QPolygonF road : _roads)
+//    for (QPolygonF road : _roads)
+//    {
+//        painter.drawPolyline(road);
+//    }
+    for (int r = 0; r < _roads.size(); ++r)
     {
-        painter.drawPolyline(road);
+        pen.setWidthF(_roads[r].width);
+        painter.setPen(pen);
+        painter.drawPolyline(_roads[r].polygon);
     }
 
     painter.restore();
@@ -217,13 +231,14 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
 
     // draw world
     painter.setWorldTransform(this->worldToView);
-    drawParkings(painter);
+//    drawParkings(painter);
     drawRoads(painter);
-    drawHouses(painter);
-    drawOther(painter);
+//    drawHouses(painter);
+//    drawOther(painter);
     // draw on map
     painter.setWorldTransform(QTransform());
     drawRuler(painter);
+
 }
 
 double RenderArea::hairLineWidth()
@@ -310,4 +325,12 @@ void RenderArea::drawRuler(QPainter & painter)
 
 
     painter.restore();
+}
+
+void RenderArea::dump2image()
+{
+    std::cout << "Dumping image " << std::endl;
+    QPixmap pixmap(this->size());
+    this->render(&pixmap);
+    pixmap.save("/home/olga/projects/OSMViewer/test.png");
 }

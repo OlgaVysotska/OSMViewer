@@ -8,6 +8,7 @@
 #include <QXmlStreamReader>
 #include <QPolygonF>
 #include "point_with_rot.h"
+#include "road.h"
 
 class DataGenerator: public QObject
 {
@@ -21,10 +22,12 @@ private:
     enum NODE_ATTRS {LONGITUDE, LATITUDE, ID};
 
     QHash<long, QPointF> _nodes;
-    QVector<QPolygonF> _roads;
+    QVector<Road> _roads;
     QVector<QPolygonF> _houses;
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;
+
+    const int AVERAGE_LANE_WIDTH = 1.5;
 
     void getNodesAndWaysFromXml();
     void storeNewNode(QXmlStreamReader *xmlReader);
@@ -34,7 +37,7 @@ private:
 signals:
     void boundariesUpdated(QHash<QString, double> &bounds);
     void dataGenerated(
-            QVector<QPolygonF> &roads,
+            QVector<Road> &roads,
             QVector<QPolygonF> &houses,
             QVector<QPolygonF> &parkings,
             QVector<QPolygonF> &other);

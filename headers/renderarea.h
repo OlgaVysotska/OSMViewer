@@ -9,6 +9,8 @@
 #include <QWheelEvent>
 #include <QPolygonF>
 
+#include "road.h"
+
 
 //! [0]
 class RenderArea : public QWidget
@@ -21,11 +23,12 @@ public:
 
     QSize minimumSizeHint() const;
     QSize sizeHint() const;
+    void dump2image();
 
 
 public slots:
     void updateBounds(QHash<QString, double> &bounds);
-    void receiveNewData(QVector<QPolygonF> &roads,
+    void receiveNewData(QVector<Road> &roads,
             QVector<QPolygonF> &houses,
             QVector<QPolygonF> &parkings,
             QVector<QPolygonF> &other);
@@ -38,7 +41,7 @@ protected:
     void wheelEvent(QWheelEvent *event);
 
 private:
-    QVector<QPolygonF> _roads;
+    QVector<Road> _roads;
     QVector<QPolygonF> _houses;
     QVector<QPolygonF> _parkings;
     QVector<QPolygonF> _other;

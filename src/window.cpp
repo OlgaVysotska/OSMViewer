@@ -23,11 +23,11 @@ Window::Window()
     setWindowTitle(tr("Test Map"));
 
     QObject::connect(
-                dataGenerator, SIGNAL(dataGenerated(QVector<QPolygonF>&,
+                dataGenerator, SIGNAL(dataGenerated(QVector<Road>&,
                                                     QVector<QPolygonF>&,
                                                     QVector<QPolygonF>&,
                                                     QVector<QPolygonF>&)),
-                renderArea, SLOT(receiveNewData(QVector<QPolygonF>&,
+                renderArea, SLOT(receiveNewData(QVector<Road>&,
                                                 QVector<QPolygonF>&,
                                                 QVector<QPolygonF>&,
                                                 QVector<QPolygonF>&)));

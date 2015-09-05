@@ -8,8 +8,10 @@
 #include <QVector3D>
 #include "point_with_rot.h"
 #include <cmath>
+#include <iostream>
 
 #include "mercator.h"
+#include "road.h"
 
 
 DataGenerator::DataGenerator(){
@@ -97,6 +99,7 @@ void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
     QPolygonF polygon;
     enum WayType {BUILDING, ROAD, PARKING, NONE};
     WayType wayType = WayType::NONE;
+    int lane_num = -1;
     //loop through everything that a way contains
     while(!(xmlReader->tokenType() == QXmlStreamReader::EndElement
             && xmlReader->name() == "way"))
@@ -137,7 +140,15 @@ void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
                         }
                         else if (key == "highway")
                         {
+//                            std::cout << "Highway found\n";
                             wayType = WayType::ROAD;
+
+                        }
+                        else if (key == "lanes")
+                        {
+//                            std::cout << "Lanes found\n";
+                            lane_num = attributes.value("v").toInt();
+//                            std::cout << "The way has  " << lane_num << " lane(s)\n";
                         }
                     }
                 }
@@ -155,7 +166,14 @@ void DataGenerator::storeNewWay(QXmlStreamReader *xmlReader)
     }
     else if (wayType == WayType::ROAD)
     {
-        _roads.push_back(polygon);
+        Road road;
+        road.polygon = polygon;
+        if(lane_num !=-1)
+        {
+            road.width = lane_num * AVERAGE_LANE_WIDTH;
+        }
+//        road.width = 3;
+        _roads.push_back(road);
     }
     else
     {
@@ -169,7 +187,7 @@ void DataGenerator::getNodesAndWaysFromXml()
     _houses.clear();
     _roads.clear();
     // QFile * xmlFile = new QFile("/home/stefan/other/downloads/freiburg.osm");
-    QFile * xmlFile = new QFile(":/maps/stuhlinger.osm");
+    QFile * xmlFile = new QFile("/home/olga/projects/OSMViewer/maps/map_my.osm");
     if (!xmlFile->open(QIODevice::ReadOnly)) {
             QMessageBox::critical(new QWidget,"Load OSM File Problem",
             "Couldn't load map file",
